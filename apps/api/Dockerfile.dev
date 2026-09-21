@@ -1,0 +1,31 @@
+# syntax=docker/dockerfile:1
+#
+# Development image: hot reload via NestJS's `start --watch`.
+#
+# Unlike the production Dockerfile, this one does NOT copy source at build
+# time — the monorepo is bind-mounted at /repo when the container runs, so
+# editing files on the host is what the container sees. This image only
+# needs Node + pnpm; installing dependencies happens on container start
+# (fast, since the mounted node_modules/pnpm store is already populated from
+# the host).
+#
+# Build context: repo root, same convention as apps/api/Dockerfile.
+#   podman build -f apps/api/Dockerfile.dev -t xarvis-api-dev .
+#
+# Run (from repo root):
+#   podman run -d --name xarvis-api-dev \
+#     --network databases_postgres_network -p 3000:3000 \
+#     -v "$(pwd):/repo:Z" \
+#     -e DATABASE_URL=postgresql://admin:admin123@postgres_db:5432/xarvis_monorepo \
+#     -e PORT=3000 -e NODE_ENV=development \
+#     -e CORS_ORIGIN=http://localhost:4321 \
+#     xarvis-api-dev
+
+FROM node:24-alpine
+WORKDIR /repo
+
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+
+EXPOSE 3000
+
+CMD ["sh", "-c", "pnpm install --frozen-lockfile && pnpm --filter api start:dev"]

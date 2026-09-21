@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/build
+**/.turbo
+**/.astro
+.git
+**/*.log
+.env
+.env.*
+!.env.example
+**/coverage
