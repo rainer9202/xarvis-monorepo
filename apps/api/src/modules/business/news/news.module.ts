@@ -9,9 +9,11 @@ import { UpdateCategoryUseCase } from "./application/use-cases/category/update-c
 import { GetNewsArticleUseCase } from "./application/use-cases/news/get-news-article.use-case";
 import { ListNewsArticlesUseCase } from "./application/use-cases/news/list-news-articles.use-case";
 import { ListNewsForUserUseCase } from "./application/use-cases/news/list-news-for-user.use-case";
+import { SyncDevToArticlesUseCase } from "./application/use-cases/news/sync-dev-to-articles.use-case";
 import { CATEGORY_REPOSITORY_PORT } from "./domain/category-repository.port";
 import { NEWS_ARTICLE_REPOSITORY_PORT } from "./domain/news-article-repository.port";
 import { USER_CATEGORY_PREFERENCE_REPOSITORY_PORT } from "./domain/user-category-preference-repository.port";
+import { DevToClient } from "./infrastructure/clients/dev-to.client";
 import { CategoriesController } from "./infrastructure/http/categories.controller";
 import { NewsController } from "./infrastructure/http/news.controller";
 import { DrizzleCategoryRepository } from "./infrastructure/persistence/drizzle-category.repository";
@@ -40,6 +42,8 @@ import { DrizzleUserCategoryPreferenceRepository } from "./infrastructure/persis
     ListNewsArticlesUseCase,
     GetNewsArticleUseCase,
     ListNewsForUserUseCase,
+    SyncDevToArticlesUseCase,
+    DevToClient,
     {
       provide: CATEGORY_REPOSITORY_PORT,
       useClass: DrizzleCategoryRepository,

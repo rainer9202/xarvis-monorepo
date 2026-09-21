@@ -5,12 +5,11 @@ import { NewsArticle } from "./news-article.entity";
  * on, implemented by an infrastructure adapter. The domain/application
  * layers know nothing about how persistence actually happens.
  *
- * Read-only on purpose: there is no ingestion job yet (fetching from
- * Dev.to/HN/RSS is a separate future task), so this port intentionally has
- * no save/update/delete — don't add persistence methods with nothing to
- * call them.
+ * `save` was added back once the Dev.to ingestion use case
+ * (SyncDevToArticlesUseCase) needed a writer — this is no longer read-only.
  */
 export interface NewsArticleRepositoryPort {
+  save(article: NewsArticle): Promise<NewsArticle>;
   findAll(filters: {
     categoryId?: string;
     source?: string;

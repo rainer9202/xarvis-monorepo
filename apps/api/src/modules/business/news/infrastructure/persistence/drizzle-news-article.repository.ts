@@ -26,8 +26,7 @@ function toEntity(row: NewsArticleRow): NewsArticle {
 
 /**
  * Adapter implementing NewsArticleRepositoryPort against a real Postgres
- * table via Drizzle. Read-only — there is no writer for this table yet
- * (ingestion is a separate future task), matching the port.
+ * table via Drizzle.
  */
 @Injectable()
 export class DrizzleNewsArticleRepository implements NewsArticleRepositoryPort {
@@ -35,6 +34,24 @@ export class DrizzleNewsArticleRepository implements NewsArticleRepositoryPort {
     @Inject(DATABASE_CONNECTION)
     private readonly db: DrizzleDatabase,
   ) {}
+
+  async save(article: NewsArticle): Promise<NewsArticle> {
+    const [row] = await this.db
+      .insert(newsArticlesTable)
+      .values({
+        id: article.id,
+        title: article.title,
+        url: article.url,
+        description: article.description,
+        imageUrl: article.imageUrl,
+        source: article.source,
+        categoryId: article.categoryId,
+        publishedAt: article.publishedAt,
+      })
+      .returning();
+
+    return toEntity(row);
+  }
 
   async findAll(filters: {
     categoryId?: string;
