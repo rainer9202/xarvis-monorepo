@@ -19,6 +19,7 @@
     "@nestjs/platform-express": "^11.2.5",
     "@nestjs/swagger": "^11.4.7",
     "@nestjs/terminus": "^12.1.0",
+    "@nestjs/throttler": "^6.7.0",
     "@xarvis/shared": "workspace:*",
     "argon2": "^0.45.1",
     "drizzle-orm": "^0.45.3",

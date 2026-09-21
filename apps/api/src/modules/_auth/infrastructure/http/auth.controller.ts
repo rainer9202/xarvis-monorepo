@@ -1,11 +1,7 @@
 import { Body, Controller, ForbiddenException, Post } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import {
-  ApiExcludeEndpoint,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import { DevLoginUseCase } from "../../application/use-cases/dev-login.use-case";
 import { LoginUseCase } from "../../application/use-cases/login.use-case";
 import { LogoutUseCase } from "../../application/use-cases/logout.use-case";
@@ -26,7 +22,11 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
+  // Stricter than the global default (100/min) — this is the brute-force
+  // vector (guessing passwords), unlike refresh/logout which operate on a
+  // high-entropy token nobody can practically guess.
   @Post("login")
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ResponseMessage("Login successful")
   @ApiOperation({ summary: "Log in with email and password" })
   @ApiResponse({ status: 201, type: AuthResponseDto })
@@ -57,11 +57,15 @@ export class AuthController {
   // Local-dev convenience only — mints a token pair for a fixed dev user,
   // skipping password verification. Hard-blocked in production at the
   // controller level (this check) AND again inside DevLoginUseCase itself
-  // (defense in depth: neither layer trusts the other alone). Excluded from
-  // Swagger so it isn't advertised even where it's reachable.
+  // (defense in depth: neither layer trusts the other alone). Visible in
+  // Swagger on purpose (so it's usable via "Try it out"), but the
+  // production check means it 403s there regardless of visibility.
   @Post("dev-login")
-  @ApiExcludeEndpoint()
   @ResponseMessage("Dev login successful")
+  @ApiOperation({
+    summary: "[DEV ONLY] Get a token pair for a fixed local dev user",
+  })
+  @ApiResponse({ status: 201, type: AuthResponseDto })
   async devLogin() {
     if (this.configService.get<string>("NODE_ENV") === "production") {
       throw new ForbiddenException("Not available in production");
